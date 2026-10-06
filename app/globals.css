@@ -2,33 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * BloodLink KH design tokens — "warm clinical".
+ *
+ * Colours are stored as HSL triplets (not hex) because the Tailwind config wraps
+ * each one in hsl(var(--token)), which is what lets utilities like bg-primary/10
+ * apply an opacity modifier. The source-of-truth hex value is in the comment.
+ *
+ * Components must only ever reference these tokens, never a raw hex value.
+ */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
+    /* Core surfaces */
+    --background: 60 9.1% 97.8%; /* #FAFAF9 — warm off-white page background */
+    --surface: 0 0% 100%; /* #FFFFFF — cards and raised surfaces */
+    --border: 20 5.9% 90%; /* #E7E5E4 */
+
+    /* Text */
+    --foreground: 24 9.8% 10%; /* #1C1917 — primary text */
+    --text-secondary: 33.3 5.5% 32.4%; /* #57534E */
+    --text-muted: 25 5.3% 44.7%; /* #78716C — spec said #A8A29E, but that is 2.41:1 on the page
+       background and fails WCAG AA. One step darker reaches 4.59:1. */
+    --text-decorative: 24 5.4% 63.9%; /* #A8A29E — the spec value, kept for
+       non-text use only: rules, dividers, disabled marks. Never for copy. */
+
+    /* Primary — blood red. Main buttons, the logo drop and critical states only. */
+    --primary: 0 72.2% 50.6%; /* #DC2626 */
+    --primary-hover: 0 73.7% 41.8%; /* #B91C1C */
+    --primary-tint: 0 85.7% 97.3%; /* #FEF2F2 */
+
+    /* Ink colours for small text set on a tint background. The -600 colours
+       above are for fills (bars, dots, buttons); on their pale tints they fall
+       below 4.5:1, so text uses these one-step-darker values instead. */
+    --critical-ink: 0 73.7% 41.8%; /* #B91C1C on #FEF2F2 = 5.91:1 */
+    --urgent-ink: 26 90.5% 37.1%; /* #B45309 on #FFFBEB = 4.84:1 */
+    --success-ink: 162.9 93.5% 24.3%; /* #047857 on #ECFDF5 = 5.21:1 */
+
+    /* Success — eligible, fulfilled */
+    --success: 161.4 93.5% 30.4%; /* #059669 */
+    --success-tint: 151.8 81% 95.9%; /* #ECFDF5 */
+
+    /* Urgency */
+    --urgent: 32.1 94.6% 43.7%; /* #D97706 */
+    --urgent-tint: 48 100% 96.1%; /* #FFFBEB */
+    --standard: 33.3 5.5% 32.4%; /* #57534E */
+    --standard-tint: 60 4.8% 95.9%; /* #F5F5F4 */
+
+    /* shadcn/ui aliases — the template's primitives read these names, so mapping
+       them here restyles Button, Card, Input and Badge from the tokens above. */
+    --card: var(--surface);
+    --card-foreground: var(--foreground);
+    --popover: var(--surface);
+    --popover-foreground: var(--foreground);
+    --primary-foreground: 0 0% 100%;
+    --secondary: var(--standard-tint);
+    --secondary-foreground: var(--foreground);
+    --muted: var(--standard-tint);
+    --muted-foreground: var(--text-secondary);
+    --accent: var(--primary-tint);
+    --accent-foreground: var(--primary-hover);
+    --destructive: var(--primary);
+    --destructive-foreground: 0 0% 100%;
+    --input: var(--border);
+    --ring: var(--primary);
+
+    --radius: 0.75rem;
   }
 }
 
@@ -36,7 +74,46 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+    /* 17px body text from the type scale, with generous leading. */
+    font-size: 17px;
+    line-height: 1.6;
+  }
+
+  /* Headings run slightly tight; body stays relaxed. */
+  h1, h2, h3 {
+    letter-spacing: -0.02em;
+  }
+
+  /* Always-visible, high-contrast focus ring (WCAG AA). */
+  :focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer utilities {
+  /* Soft red radial wash behind the home hero. */
+  .hero-wash {
+    background-image: radial-gradient(
+      60% 55% at 70% 0%,
+      hsl(var(--primary) / 0.10) 0%,
+      hsl(var(--primary) / 0.04) 40%,
+      transparent 72%
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

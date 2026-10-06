@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -56,10 +58,21 @@ export default function RootLayout({
     // hydrates. Those diffs are cosmetic and not ours to fix.
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.className} antialiased`}
+        className={`${geistSans.className} flex min-h-screen flex-col antialiased`}
         suppressHydrationWarning
       >
-        {children}
+        {/* Keyboard users can jump past the header straight to the content. */}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-button focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:shadow-lift"
+        >
+          Skip to content
+        </a>
+        <SiteHeader />
+        <main id="main" className="flex-1">
+          {children}
+        </main>
+        <SiteFooter />
       </body>
     </html>
   );

@@ -63,3 +63,50 @@ carried it on `<html>` for `next-themes`, and it was dropped together with that
 dependency in M1. React applies the flag only to the element it is set on, not to
 descendants, so the remaining `<div bis_skin_checked>` warnings can only be silenced by
 disabling the extension — they do not affect users who do not have it installed.
+
+## Design tokens pulled forward from M4
+
+The M1 placeholder home page looked unfinished, so the token layer of M4 was brought
+forward to make every existing screen look intentional. M4 still owns the rest.
+
+**Built**
+
+- `app/globals.css` now defines the full "warm clinical" palette as HSL triplets
+  (Tailwind v3 wraps them in `hsl(var(--token))`, which is what makes opacity
+  modifiers like `bg-primary/10` work). Source hex values are kept in comments.
+- `tailwind.config.ts` maps every token to a utility: colours, the 13/15/17/20/28/36
+  type scale, radii (`card` 16px, `button`/`input` 12px, `pill`), the two subtle
+  shadows, `max-w-content` (1120px), and a reduced-motion-safe pulse keyframe.
+- The shadcn primitives are restyled purely by remapping their CSS variables, so
+  Button, Card, Input and Badge now follow the design system with no per-component
+  hex values. Buttons are 44px tall (48px at `lg`), inputs 48px.
+- `BloodDrop` (inline SVG drop with the blood type inside, sizes sm/md/lg, solid and
+  soft variants) and the `Logo` wordmark.
+- Sticky blurred `SiteHeader` and a `SiteFooter` carrying the disclaimer, both wired
+  into the root layout so every page gets them, plus a "Skip to content" link.
+- A real home hero: headline, subtext, two CTAs, the soft red radial wash, a large
+  decorative drop illustration with the eight blood-type chips, and a "How it works"
+  section.
+- `scripts/design-qa.mjs`, a dependency-free Design QA harness (see below).
+
+**Problems hit and how they were fixed**
+
+1. **Three WCAG AA failures in the specified palette.** Measured contrast showed
+   `#A8A29E` muted text at 2.41:1 on the page background, `#DC2626` on `#FEF2F2` at
+   4.41:1, `#D97706` on `#FFFBEB` at 3.07:1, and `#059669` on `#ECFDF5` at 3.58:1 —
+   all below the 4.5:1 the brief also requires. Fixed by taking each colour one step
+   darker **for text only**, keeping the specified colours for fills (bars, dots,
+   buttons): `--critical-ink #B91C1C` (5.91:1), `--urgent-ink #B45309` (4.84:1),
+   `--success-ink #047857` (5.21:1), and `--text-muted #78716C` (4.59:1). The spec's
+   `#A8A29E` is retained as `--text-decorative` for non-text use only.
+2. **Headless screenshots falsely showed horizontal overflow.** `chrome --headless
+   --screenshot --window-size=375,1200` produced clipped text, because Chrome clamps
+   its minimum window width on macOS and crops the capture. Replaced with a CDP
+   harness using `Emulation.setDeviceMetricsOverride`; it also asserts
+   `scrollWidth === clientWidth`. At a true 375px, all pages measured zero overflow.
+3. **Auth pages used `min-h-svh`.** Now that the layout adds a header and footer,
+   that overflowed the viewport. Swapped for vertical padding.
+
+**Design QA result** — home and the auth pages at 375px and 1280px: no horizontal
+scrolling, no text overflow, consistent spacing and radii, token colours only.
+Auth page *copy* is still the template's and is restyled in M4 as planned.
