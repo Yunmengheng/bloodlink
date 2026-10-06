@@ -1,51 +1,31 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Suspense } from "react";
+import Link from "next/link";
+import { AuthShell } from "@/components/auth-shell";
+import { Toast } from "@/components/toast";
+import { getI18n } from "@/lib/i18n";
 
-async function ErrorContent({
+export const metadata = { title: "Something went wrong" };
+
+export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ error: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
-  const params = await searchParams;
+  const { t } = await getI18n();
+  const { error } = await searchParams;
 
   return (
-    <>
-      {params?.error ? (
-        <p className="text-sm text-muted-foreground">
-          Code error: {params.error}
-        </p>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          An unspecified error occurred.
-        </p>
-      )}
-    </>
-  );
-}
-
-export default function Page({
-  searchParams,
-}: {
-  searchParams: Promise<{ error: string }>;
-}) {
-  return (
-    <div className="flex w-full items-center justify-center px-4 py-14 sm:py-20">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">
-                Sorry, something went wrong.
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Suspense>
-                <ErrorContent searchParams={searchParams} />
-              </Suspense>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
+    <AuthShell
+      title={t.auth.errorTitle}
+      footer={
+        <Link
+          href="/auth/login"
+          className="font-semibold text-primary underline-offset-4 hover:underline"
+        >
+          {t.common.signIn}
+        </Link>
+      }
+    >
+      <Toast tone="error">{error ?? t.common.somethingWentWrong}</Toast>
+    </AuthShell>
   );
 }

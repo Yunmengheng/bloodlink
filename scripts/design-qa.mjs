@@ -20,7 +20,7 @@ import { writeFileSync } from "node:fs";
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const PORT = 9333;
 const OUT = process.argv[2];
-const targets = JSON.parse(process.argv[3]); // [{name,url,width,height,mobile}]
+const targets = JSON.parse(process.argv[3]); // [{name,url,width,height,mobile,cookies}]
 
 const chrome = spawn(CHROME, [
   "--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run",
@@ -61,12 +61,20 @@ const { targetId } = await send("Target.createTarget", { url: "about:blank" });
 const { sessionId } = await send("Target.attachToTarget", { targetId, flatten: true });
 await send("Page.enable", {}, sessionId);
 await send("Runtime.enable", {}, sessionId);
+await send("Network.enable", {}, sessionId);
 
 const report = [];
 for (const t of targets) {
   await send("Emulation.setDeviceMetricsOverride", {
     width: t.width, height: t.height, deviceScaleFactor: 2, mobile: !!t.mobile,
   }, sessionId);
+
+  // Cookies let a target render a specific state, e.g. lang=km.
+  for (const [name, value] of Object.entries(t.cookies ?? {})) {
+    await send("Network.setCookie", {
+      name, value, url: t.url, path: "/",
+    }, sessionId);
+  }
   await send("Page.navigate", { url: t.url }, sessionId);
   await sleep(1400);
 

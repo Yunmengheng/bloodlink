@@ -14,6 +14,11 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-latin)", "var(--font-khmer)", "system-ui", "sans-serif"],
+        khmer: ["var(--font-khmer)", "sans-serif"],
+      },
+
       colors: {
         background: "hsl(var(--background))",
         surface: "hsl(var(--surface))",

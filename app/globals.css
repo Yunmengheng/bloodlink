@@ -77,9 +77,35 @@
 
   body {
     @apply bg-background text-foreground;
+    /* Latin face first; the browser falls through to Noto Sans Khmer for Khmer
+       glyphs, which Geist does not contain. */
+    font-family: var(--font-latin), var(--font-khmer), system-ui, sans-serif;
     /* 17px body text from the type scale, with generous leading. */
     font-size: 17px;
     line-height: 1.6;
+  }
+
+  /* Khmer needs more vertical room: taller line-height and about 1px more size.
+     Applied on <body> when the language cookie is km. */
+  .lang-km {
+    font-size: 18px;
+    line-height: 1.75;
+  }
+
+  .lang-km h1,
+  .lang-km h2,
+  .lang-km h3 {
+    line-height: 1.4;
+    /* Khmer diacritics stack above and below; tight tracking makes them collide. */
+    letter-spacing: 0;
+  }
+
+  .lang-km p,
+  .lang-km li,
+  .lang-km label,
+  .lang-km button,
+  .lang-km a {
+    line-height: 1.75;
   }
 
   /* Headings run slightly tight; body stays relaxed. */

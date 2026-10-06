@@ -11,7 +11,7 @@ export function Logo({
   asLink?: boolean;
 }) {
   const content = (
-    <span className={cn("inline-flex items-center gap-2", className)}>
+    <span className={cn("inline-flex items-center gap-2 whitespace-nowrap", className)}>
       <BloodDrop size="sm" />
       <span className="text-lg font-bold tracking-tight text-foreground">
         BloodLink{" "}
@@ -25,7 +25,9 @@ export function Logo({
   return (
     <Link
       href="/"
-      className="rounded-button transition-opacity duration-150 hover:opacity-80"
+      // inline-flex, not the anchor default of inline, so vertical spacing
+      // utilities apply to it in the footer.
+      className="inline-flex rounded-button transition-opacity duration-150 hover:opacity-80"
       aria-label="BloodLink KH, go to home page"
     >
       {content}

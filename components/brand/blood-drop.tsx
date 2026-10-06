@@ -6,9 +6,11 @@ import { cn } from "@/lib/utils";
  */
 
 const SIZES = {
-  sm: { box: "h-7 w-6", text: "text-[10px]" },
-  md: { box: "h-10 w-[34px]", text: "text-[13px]" },
-  lg: { box: "h-14 w-12", text: "text-[18px]" },
+  // `wide` is used for three-character labels (AB-, AB+), which overflow the
+  // drop at the default size.
+  sm: { box: "h-7 w-6", text: "text-[10px]", wide: "text-[8px]" },
+  md: { box: "h-10 w-[34px]", text: "text-[13px]", wide: "text-[11px]" },
+  lg: { box: "h-14 w-12", text: "text-[18px]", wide: "text-[15px]" },
 } as const;
 
 export type BloodDropSize = keyof typeof SIZES;
@@ -60,7 +62,7 @@ export function BloodDrop({
           className={cn(
             // Centred on the round part of the drop, not the whole box.
             "absolute inset-x-0 bottom-[6%] flex h-[66%] items-center justify-center font-semibold tabular-nums",
-            s.text,
+            type.length > 2 ? s.wide : s.text,
             solid ? "text-primary-foreground" : "text-primary",
           )}
           aria-hidden="true"

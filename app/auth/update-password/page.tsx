@@ -1,11 +1,14 @@
 import { UpdatePasswordForm } from "@/components/update-password-form";
+import { AuthShell } from "@/components/auth-shell";
+import { getI18n } from "@/lib/i18n";
 
-export default function Page() {
+export const metadata = { title: "New password" };
+
+export default async function Page() {
+  const { t } = await getI18n();
   return (
-    <div className="flex w-full items-center justify-center px-4 py-14 sm:py-20">
-      <div className="w-full max-w-sm">
-        <UpdatePasswordForm />
-      </div>
-    </div>
+    <AuthShell title={t.auth.forgotTitle}>
+      <UpdatePasswordForm t={t} />
+    </AuthShell>
   );
 }

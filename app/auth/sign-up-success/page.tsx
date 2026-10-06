@@ -1,32 +1,25 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import Link from "next/link";
+import { AuthShell } from "@/components/auth-shell";
+import { getI18n } from "@/lib/i18n";
 
-export default function Page() {
+export const metadata = { title: "Confirm your email" };
+
+export default async function Page() {
+  const { t } = await getI18n();
   return (
-    <div className="flex w-full items-center justify-center px-4 py-14 sm:py-20">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">
-                Thank you for signing up!
-              </CardTitle>
-              <CardDescription>Check your email to confirm</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                You&apos;ve successfully signed up. Please check your email to
-                confirm your account before signing in.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
+    <AuthShell
+      title={t.auth.signUpSuccessTitle}
+      subtitle={t.auth.signUpSuccessBody}
+      footer={
+        <Link
+          href="/auth/login"
+          className="font-semibold text-primary underline-offset-4 hover:underline"
+        >
+          {t.common.signIn}
+        </Link>
+      }
+    >
+      <div />
+    </AuthShell>
   );
 }

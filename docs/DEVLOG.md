@@ -153,3 +153,60 @@ Auth page *copy* is still the template's and is restyled in M4 as planned.
 **Local Postgres gotcha** — `initdb`/`pg_ctl` could not start inside the scratchpad
 directory: the Unix socket path exceeded the 103-byte limit. Fixed by putting the
 socket in `/tmp` and connecting over TCP on 127.0.0.1.
+
+## M4–M9 — Design system, pages and flows
+
+Built in one pass at the user's request rather than as separate milestones.
+
+**Built**
+
+- **i18n**: `lang` cookie, `getI18n()` for Server Components, a `fill()`
+  interpolator, an EN | ខ្មែរ toggle backed by a Server Action, and Noto Sans
+  Khmer loaded via `next/font`. Khmer gets 18px/1.75 and relaxed heading leading.
+- **Components**: `BloodDrop`, `Logo`, `UrgencyPill`, `BloodTypePicker` (4x2 radio
+  tiles), `RequestCard`, `EmptyState`, `Skeleton`/`RequestListSkeleton`,
+  `EligibilityRing`, `Toast`, `Field`/`FormSection`, `FeedFilters`,
+  `LanguageToggle`, `BottomTabBar`, `AuthShell`.
+- **Pages**: home (hero, stats strip, "needed now", filtered feed, how it works),
+  `/requests/new`, `/requests/[id]` with owner / donor / signed-out views,
+  `/donor`, `/for-you`, `/my-requests`, `/learn`, and all six auth pages restyled
+  with real copy.
+- **Server Actions**: `saveDonorProfile`, `setAvailability`, `createRequest`,
+  `markFulfilled`, `cancelRequest`, `respondToRequest`, `withdrawResponse`. Every
+  rule the UI uses to show the "I can help" button is re-checked on the server.
+- **Validation**: Zod schemas whose error messages are dictionary *keys*, so the
+  client renders them in the active language rather than the server returning
+  English.
+
+**Problems hit and how they were fixed**
+
+1. **`cacheComponents: true` fought the app.** Under Next 16's partial
+   prerendering, every dynamic read needs its own Suspense boundary — and this
+   app reads the language cookie in the root layout, the session in the header,
+   and per-user data on every page. Turned it off in `next.config.ts` with a
+   comment explaining when to turn it back on. This is a deviation from the
+   template worth flagging.
+2. **The footer rendered "BloodLink KHស្វែងយល់" on one line.** `space-y-3` applies
+   a top margin, but both the logo anchor and the link are *inline-level*, so they
+   shared a line box regardless. Fixed with `flex flex-col items-start gap-3`, and
+   the `Logo` anchor is now `inline-flex`.
+3. **"AB+" overflowed the small BloodDrop.** Three-character labels now use a
+   smaller `wide` text size.
+4. **The Khmer toggle label was clipped.** The subscript consonant in ខ្មែរ sits
+   below the baseline and was cut off at a tight line-height. Fixed with
+   `leading-[1.9]`.
+5. **The header wordmark wrapped at 375px in Khmer**, because Khmer nav labels are
+   wider. Fixed with `whitespace-nowrap` and tighter gaps below `sm`.
+6. **Public-route logic needed a test.** `isPublicPath` decides what a signed-out
+   visitor reaches; a naive `startsWith("/requests/")` would have made
+   `/requests/new` public. It is now exported and unit-tested, including that an
+   id beginning with "new" is still treated as a real request.
+
+**Design QA** — home, learn and the auth pages at 375px and 1280px, in English and
+Khmer: `scrollWidth === clientWidth` everywhere (no horizontal scrolling), no text
+overflow, token colours only, and designed empty/loading states. Route protection
+verified live: `/`, `/learn` and the auth pages return 200 signed out, while
+`/donor`, `/for-you`, `/my-requests` and `/requests/new` all 307 to `/auth/login`.
+
+**Note** — the app degrades gracefully while the database tables do not yet exist:
+stats read as 0 and the feed shows its empty state rather than crashing.
