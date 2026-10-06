@@ -110,3 +110,46 @@ forward to make every existing screen look intentional. M4 still owns the rest.
 **Design QA result** — home and the auth pages at 375px and 1280px: no horizontal
 scrolling, no text overflow, consistent spacing and radii, token colours only.
 Auth page *copy* is still the template's and is restyled in M4 as planned.
+
+## M3 — Database schema, RLS and types
+
+**Built**
+
+- `supabase/migrations/0001_init.sql`: three enums, four tables, the
+  `responses_count` trigger, feed indexes, RLS on every table, and two SQL
+  functions (`get_public_stats`, `get_needed_blood_types`). Written to be safe to
+  re-run — every object is `if not exists` or dropped first.
+- `docs/SECURITY.md`: every policy in plain English, plus an explicit confirmation
+  that no policy leaks contact data.
+- `lib/database.types.ts`, wired into both Supabase clients so queries are typed.
+- `supabase/tests/`: an RLS test suite (see below).
+
+**Problems hit and how they were fixed**
+
+1. **I could not verify the SQL against the real project.** The Supabase connector
+   is authorised for a different organisation and returns "You do not have
+   permission" for this project ref. Rather than ship unverified SQL, I ran the
+   migration against a throwaway local Postgres 18 cluster with a small shim that
+   recreates what Supabase provides: the `anon`/`authenticated`/`service_role`
+   roles, the `auth` schema, `auth.users`, and an `auth.uid()` that reads
+   `request.jwt.claims` the way Supabase's does. The migration applied cleanly.
+2. **Then I tested the policies properly.** 23 checks, each running as `anon` or
+   `authenticated` with a JWT claim set — the same way PostgREST executes an app
+   request. All pass. The suite is kept in `supabase/tests/` because privacy is the
+   part of this project most likely to have a silent bug.
+3. **Open question about the `REVOKE` on the trigger function.** I revoked `EXECUTE`
+   on `sync_responses_count()` for hardening, then realised I was not certain
+   whether Postgres re-checks `EXECUTE` when firing a trigger — if it did, every
+   donor response would fail. Rather than guess, the suite now inserts a response
+   **as the `authenticated` role** and asserts `responses_count` moves 1 -> 2 and
+   back. It does. Postgres checks `EXECUTE` at `CREATE TRIGGER` time, not at fire
+   time, so the revoke is safe.
+4. **The first test run reported 21 failures that were not real.** The harness used
+   `tail -1` on psql output and was reading the `ROLLBACK` command tag instead of
+   the row count. Fixed by running psql with `-q` and filtering command tags. Worth
+   recording: a test harness that reports failure incorrectly is more dangerous
+   than no test, because the obvious next move is to "fix" working policies.
+
+**Local Postgres gotcha** — `initdb`/`pg_ctl` could not start inside the scratchpad
+directory: the Unix socket path exceeded the 103-byte limit. Fixed by putting the
+socket in `/tmp` and connecting over TCP on 127.0.0.1.
