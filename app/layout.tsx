@@ -1,6 +1,5 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
-import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -9,8 +8,35 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: {
+    default: "BloodLink KH — Every drop finds its match",
+    template: "%s · BloodLink KH",
+  },
+  description:
+    "BloodLink KH privately matches urgent blood requests in Cambodia with compatible, eligible donors. Bilingual Khmer and English.",
+  applicationName: "BloodLink KH",
+  keywords: [
+    "blood donation",
+    "Cambodia",
+    "Phnom Penh",
+    "blood donor",
+    "ឈាម",
+  ],
+  openGraph: {
+    title: "BloodLink KH — Every drop finds its match",
+    description:
+      "Privately match urgent blood requests with compatible, eligible donors in Cambodia.",
+    siteName: "BloodLink KH",
+    locale: "en_US",
+    type: "website",
+  },
+};
+
+export const viewport: Viewport = {
+  // Mobile-first: the app is designed for phones before desktop.
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#FAFAF9",
 };
 
 const geistSans = Geist({
@@ -25,17 +51,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
-      </body>
+    <html lang="en">
+      <body className={`${geistSans.className} antialiased`}>{children}</body>
     </html>
   );
 }
