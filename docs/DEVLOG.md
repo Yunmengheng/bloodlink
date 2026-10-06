@@ -210,3 +210,26 @@ verified live: `/`, `/learn` and the auth pages return 200 signed out, while
 
 **Note** — the app degrades gracefully while the database tables do not yet exist:
 stats read as 0 and the feed shows its empty state rather than crashing.
+
+## M10 — Seed script, README and deployment guide
+
+**Built**
+
+- `scripts/seed.ts` (`npx tsx scripts/seed.ts`): reads `.env.local` itself, creates
+  three pre-confirmed demo users, two donor profiles, eight open requests across
+  real Phnom Penh hospitals with mixed urgency, two fulfilled requests so the stats
+  strip is not all zeros, and one existing response so the requester view has
+  something to show. Re-runnable, and it prints the demo logins at the end.
+- Full README: problem, solution, features, architecture, data model, privacy
+  model, compatibility table, setup, env vars, seeding, Vercel deployment
+  (including the Supabase Auth URL Configuration step), future work, MIT licence.
+
+**Notes**
+
+- One donor is seeded as **not** eligible (last donation 30 days ago) on purpose, so
+  the eligibility countdown ring is visible in a demo without waiting.
+- The README's compatibility table is **unit-tested against `canDonate()`**
+  (`lib/readme-table.test.ts`). A documentation table that drifts from the code
+  would be medically wrong, not just stale.
+- The seed script is the only place `SUPABASE_SECRET_KEY` is read, and the README
+  states explicitly that it must not be added to Vercel.
