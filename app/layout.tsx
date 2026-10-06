@@ -51,8 +51,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.className} antialiased`}>{children}</body>
+    // suppressHydrationWarning: browser extensions (ad blockers, antivirus
+    // page scanners) inject attributes onto <html> and <body> before React
+    // hydrates. Those diffs are cosmetic and not ours to fix.
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${geistSans.className} antialiased`}
+        suppressHydrationWarning
+      >
+        {children}
+      </body>
     </html>
   );
 }

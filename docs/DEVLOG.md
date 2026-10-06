@@ -49,3 +49,17 @@ A running record of what was built in each milestone, what broke, and how it was
   `lib/supabase/proxy.ts`. All route-protection work will follow that pattern.
 - `next.config.ts` sets `cacheComponents: true`, so any component reading cookies or
   the database must sit inside a `<Suspense>` boundary.
+
+### M1 follow-up — hydration warnings
+
+Running `npm run dev` surfaced React hydration mismatches on `<body>` and on several
+`<div>`s. The mismatched attributes (`bis_skin_checked`, `bis_register`,
+`__processed_<uuid>__`) appear nowhere in the source and zero times in the
+server-rendered HTML, so they are injected by a browser extension after the server
+HTML arrives, not produced by our code.
+
+Restored `suppressHydrationWarning` on `<html>` and added it to `<body>`. The template
+carried it on `<html>` for `next-themes`, and it was dropped together with that
+dependency in M1. React applies the flag only to the element it is set on, not to
+descendants, so the remaining `<div bis_skin_checked>` warnings can only be silenced by
+disabling the extension — they do not affect users who do not have it installed.
