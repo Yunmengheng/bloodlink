@@ -79,7 +79,7 @@ export default async function ForYouPage() {
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2">
           {requests.map((r) => (
-            <li key={r.id}>
+            <li key={r.id} className="min-w-0">
               <RequestCard
                 request={r}
                 t={t}

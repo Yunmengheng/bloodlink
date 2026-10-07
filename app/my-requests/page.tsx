@@ -54,7 +54,7 @@ export default async function MyRequestsPage() {
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2">
             {requests.map((r) => (
-              <li key={r.id} className="relative">
+              <li key={r.id} className="relative min-w-0">
                 {/* Status and response count sit above the card link. */}
                 <div className="mb-2 flex items-center gap-2">
                   <span

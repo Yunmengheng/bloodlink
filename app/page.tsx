@@ -240,7 +240,9 @@ async function Feed({
   return (
     <ul className="grid gap-3 sm:grid-cols-2">
       {requests.map((r) => (
-        <li key={r.id}>
+        // min-w-0: grid items otherwise refuse to shrink below their
+        // min-content width and overflow the track on narrow screens.
+        <li key={r.id} className="min-w-0">
           <RequestCard request={r} t={t} lang={lang} />
         </li>
       ))}

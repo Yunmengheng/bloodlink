@@ -438,3 +438,43 @@ making the mark and wordmark responsive rather than shrinking the design. A 360p
 375/1280 targets the brief specifies.
 
 `AuthShell` now uses the brand mark too, so the auth pages match.
+
+### Seeded the live project, and a bug only real data could reveal
+
+**Rewrote `scripts/seed.ts`** so requests belong to the accounts that already
+exist in the project, discovered via the admin API, rather than to invented demo
+users. Real email addresses are therefore never hard-coded in the repo. If no
+accounts exist, it falls back to creating a demo requester.
+
+It is now additive rather than destructive: each planned row is inserted only if an
+equivalent one is missing, keyed on requester + hospital + blood type + units. Rerunning
+never duplicates and never deletes anything the user created by hand.
+
+Responses are only seeded where `canDonate(donor, patient)` actually passes, and
+never from an ineligible donor or onto the donor's own request. Seeded data that
+contradicted the app's own rules would be worse than no data.
+
+**Result:** 10 requests across the two real accounts, 3 demo donors, 6 offers,
+2 fulfilled. Stats read 9 open / 4 donors / 2 fulfilled.
+
+**Verified afterwards:**
+
+- Every seeded response is blood-compatible, checked against `canDonate`.
+- `responses_count` matches the actual row counts, so the trigger is correct on
+  the live database.
+- **The RLS check is now conclusive.** Earlier, anon reading `request_contacts`,
+  `donors` and `responses` returned zero rows, but the tables were empty so that
+  proved nothing. With real rows in all three, anon still reads **0 from each**
+  while reading 11 from `blood_requests`, and the public feed row has no
+  contact-bearing column at all.
+
+**Bug found that an empty database had hidden.** With the feed populated, the page
+measured 381px wide at a 375px viewport. The diagnostic showed the `<li>` grid items
+at 365px while their parent `<ul>` stayed at 343 — CSS Grid's `min-width: auto`,
+which stops a grid item shrinking below its min-content size. Fixed with `min-w-0`
+on the grid items in the home feed, For you and My requests. That also cleared the
+320px overflow that had been outstanding, so all three widths are now clean.
+
+Worth recording: every earlier Design QA pass ran against an empty feed, so the card
+layout was never actually measured. Empty states are not a substitute for real data
+when checking layout.
