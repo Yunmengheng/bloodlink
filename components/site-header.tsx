@@ -39,7 +39,7 @@ export function SiteHeader({ lang, t }: { lang: Lang; t: Dictionary }) {
           {!hasEnvVars ? (
             <EnvVarWarning />
           ) : (
-            <Suspense fallback={<div className="h-10 w-20" />}>
+            <Suspense fallback={<div className="h-11 w-11 rounded-pill bg-standard-tint" />}>
               <AuthButton t={t} />
             </Suspense>
           )}

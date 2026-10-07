@@ -377,3 +377,29 @@ cleared it — worth knowing when switching between dev and production locally.
 **Verified:** build, lint, 152 tests, and the signed-out request page renders with
 no contact details and no horizontal overflow at 1280px. The expanded owner view was
 not screenshotted, since that needs a signed-in session.
+
+### Avatar menu in the header
+
+The header showed a truncated email ("menghengyun@gmail…") that ate most of the
+width on mobile and told the user nothing they did not already know, next to a
+separate Sign out button.
+
+Replaced with an avatar menu, which is what the original brief specified. A 44px
+circular button showing the first letter of the email opens a dropdown containing
+the full address, links to Profile, For you and My requests, and Sign out. Built on
+the Radix dropdown the template already ships, so no new dependency.
+
+**Decision worth recording:** the avatar shows the email's initial rather than the
+donor's name. The header renders on every page, so reading the `donors` table there
+would add a ~270ms database round trip to pages that otherwise need none — undoing
+the latency work from the previous fix. If a real name is wanted later, the right
+move is to put it on the JWT as user metadata at sign-up, not to query per render.
+
+`components/logout-button.tsx` was left unused and has been deleted. The Suspense
+fallback in the header is now sized to the avatar (44x44 pill) so there is no layout
+shift while the session resolves.
+
+**Housekeeping:** deleted the stray empty `package-lock.json` in the parent
+directory, created by an accidental `npm i` outside the repo. It was making Next
+warn on every build: "Next.js ignored package-lock.json ... because it is outside
+the current Git repository."

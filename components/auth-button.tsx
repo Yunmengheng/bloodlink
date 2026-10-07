@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "./ui/button";
+import { UserMenu } from "./user-menu";
 import { createClient } from "@/lib/supabase/server";
-import { LogoutButton } from "./logout-button";
 import type { Dictionary } from "@/lib/i18n";
 
 export async function AuthButton({ t }: { t: Dictionary }) {
@@ -25,16 +25,5 @@ export async function AuthButton({ t }: { t: Dictionary }) {
   }
 
   const email = typeof user.email === "string" ? user.email : "";
-
-  return (
-    <div className="flex items-center gap-3">
-      <span
-        className="hidden max-w-[160px] truncate text-sm text-subtle lg:inline"
-        title={email}
-      >
-        {email}
-      </span>
-      <LogoutButton label={t.common.signOut} />
-    </div>
-  );
+  return <UserMenu email={email} t={t} />;
 }
