@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Toast } from "@/components/toast";
 import { HelpButton, WithdrawButton } from "./help-button";
 import { OwnerActions } from "./owner-actions";
+import { ResponderCard } from "@/components/responder-card";
 import {
   getCurrentUserId,
   getDonorProfile,
@@ -20,6 +21,7 @@ import { districtLabel } from "@/lib/districts";
 import { fill, getI18n, type Dictionary, type Lang } from "@/lib/i18n";
 import type {
   BloodRequest,
+  BloodTypeEnum,
   Donor,
   DonorResponse,
   RequestContact,
@@ -165,6 +167,7 @@ export default async function RequestPage({
             requestId={id}
             isOpen={request.status === "open"}
             responses={responses}
+            patientBloodType={request.patient_blood_type}
             t={t}
             lang={lang}
           />
@@ -262,12 +265,14 @@ function OwnerView({
   requestId,
   isOpen,
   responses,
+  patientBloodType,
   t,
   lang,
 }: {
   requestId: string;
   isOpen: boolean;
   responses: DonorResponse[];
+  patientBloodType: BloodTypeEnum;
   t: Dictionary;
   lang: Lang;
 }) {
@@ -286,27 +291,13 @@ function OwnerView({
         ) : (
           <ul className="space-y-3">
             {responses.map((r) => (
-              <li
+              <ResponderCard
                 key={r.id}
-                className="rounded-button border border-border bg-background p-4"
-              >
-                <ContactLinks
-                  name={r.donor_name}
-                  phone={r.donor_phone}
-                  telegram={r.donor_telegram}
-                  t={t}
-                />
-                <p className="mt-2 flex items-center gap-2 text-xs text-subtle">
-                  <span className="font-semibold text-primary">
-                    {r.donor_blood_type}
-                  </span>
-                  <span>·</span>
-                  <span>{relativeTime(r.created_at, lang)}</span>
-                </p>
-                {r.message ? (
-                  <p className="mt-2 text-sm text-foreground">{r.message}</p>
-                ) : null}
-              </li>
+                response={r}
+                patientBloodType={patientBloodType}
+                t={t}
+                lang={lang}
+              />
             ))}
           </ul>
         )}

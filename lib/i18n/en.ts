@@ -85,6 +85,13 @@ export const en = {
     urgencyUrgent: "Urgent",
     urgencyStandard: "Standard",
     responders: "Donors who offered to help",
+    showDetails: "Details",
+    hideDetails: "Hide",
+    offered: "Offered",
+    canDonateTo: "Can donate to {recipient}",
+    noMessage: "No message left.",
+    contactPrivate:
+      "You can see this because they offered to help. Please keep it private.",
     noResponders: "No donors have responded yet.",
     noRespondersBody:
       "Compatible donors are being shown this request. We will list them here as they offer.",

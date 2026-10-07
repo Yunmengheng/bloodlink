@@ -341,3 +341,39 @@ when demoing: run `npm run build && npm start`, not `npm run dev`.
 
 **Checked for collateral damage:** only one request row exists, so the apparent hang
 did not cause duplicate submissions.
+
+### Expandable responder cards
+
+**Asked for:** tapping a donor who offered to help should reveal their details,
+such as their blood type.
+
+**Built** `components/responder-card.tsx`. Collapsed it shows the initials avatar,
+name, blood type and relative time with the Call and Telegram buttons. Expanding it
+reveals a large `BloodDrop`, a "Can donate to {recipient}" confirmation, the phone
+number and Telegram handle as selectable text (not just buttons), the exact date and
+time of the offer, the message, and a note that the contact is private.
+
+The toggle is a `<button>` with `aria-expanded`, and the Call/Telegram links sit
+outside it — interactive elements cannot legally nest inside a button.
+
+**Privacy boundary worth recording.** Everything shown comes from the snapshot on
+the `responses` row. The requester deliberately cannot read the `donors` table, so
+there is no district, donation history or availability to display. Showing those
+would mean loosening `donors_select_own`, which is the policy that stops anyone
+enumerating donors. The card shows everything available without weakening that.
+
+**Problem hit.** The build failed with an opaque "Ecmascript file had an error" on
+`lib/i18n/index.ts`. Cause: `ResponderCard` is a Client Component and imported the
+runtime `fill()` from `@/lib/i18n`, which imports `cookies` from `next/headers` —
+dragging a server-only module into the browser bundle. Other client components only
+imported `type Dictionary`, and type-only imports are erased, which is why this had
+not surfaced before. Fixed by moving `fill()` into `lib/i18n/fill.ts` with no server
+imports; the index re-exports it for Server Components.
+
+**Also hit:** a stale `.next` directory produced "Could not find a production build"
+after an earlier `npm run dev` was interrupted. `rm -rf .next && npm run build`
+cleared it — worth knowing when switching between dev and production locally.
+
+**Verified:** build, lint, 152 tests, and the signed-out request page renders with
+no contact details and no horizontal overflow at 1280px. The expanded owner view was
+not screenshotted, since that needs a signed-in session.

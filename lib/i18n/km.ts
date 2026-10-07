@@ -96,6 +96,13 @@ export const km: Dictionary = {
     urgencyUrgent: "បន្ទាន់",
     urgencyStandard: "ធម្មតា",
     responders: "អ្នកបរិច្ចាគដែលស្នើជំនួយ",
+    showDetails: "ព័ត៌មានលម្អិត",
+    hideDetails: "លាក់",
+    offered: "បានស្នើ",
+    canDonateTo: "អាចបរិច្ចាគឲ្យ {recipient}",
+    noMessage: "គ្មានសារទេ។",
+    contactPrivate:
+      "អ្នកឃើញព័ត៌មាននេះ ព្រោះគេបានស្នើជំនួយ។ សូមរក្សាជាការសម្ងាត់។",
     noResponders: "មិនទាន់មានអ្នកបរិច្ចាគឆ្លើយតបនៅឡើយទេ។",
     noRespondersBody:
       "សំណើនេះកំពុងបង្ហាញដល់អ្នកបរិច្ចាគដែលត្រូវគ្នា។ យើងនឹងរាយឈ្មោះពួកគេនៅទីនេះ។",

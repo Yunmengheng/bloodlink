@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { en, type Dictionary } from "./en";
+import { fill } from "./fill";
 import { km } from "./km";
 
 export type Lang = "en" | "km";
@@ -30,22 +31,8 @@ export async function getI18n(): Promise<{ lang: Lang; t: Dictionary }> {
   return { lang, t: getDictionary(lang) };
 }
 
-/**
- * Fills {placeholders} in a dictionary string.
- *
- *   fill(t.donor.notEligible, { date: "1 Jan" })
- *
- * Unknown placeholders are left untouched so a typo is visible rather than
- * silently producing an empty gap.
- */
-export function fill(
-  template: string,
-  vars: Record<string, string | number>,
-): string {
-  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
-    key in vars ? String(vars[key]) : match,
-  );
-}
-
+// Re-exported for Server Components. Client Components must import it from
+// "@/lib/i18n/fill" directly, since this module uses next/headers.
+export { fill };
 export type { Dictionary };
 export { en, km };

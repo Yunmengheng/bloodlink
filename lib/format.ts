@@ -23,6 +23,24 @@ export function formatDate(
   }).format(date);
 }
 
+/** Full date and time, shown when a relative time is not precise enough. */
+export function formatDateTime(
+  value: string | Date | null | undefined,
+  lang: Lang,
+): string {
+  if (!value) return "—";
+  const date = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat(LOCALE[lang], {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
 /** "3 hours ago" style text, using Intl so both languages are handled. */
 export function relativeTime(value: string | Date, lang: Lang): string {
   const date = typeof value === "string" ? new Date(value) : value;
