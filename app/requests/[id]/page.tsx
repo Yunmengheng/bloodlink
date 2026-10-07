@@ -38,22 +38,30 @@ export default async function RequestPage({
   const { posted } = await searchParams;
   const { lang, t } = await getI18n();
 
-  const request = await getRequest(id);
+  // Each Supabase round trip costs ~250ms, so these run in waves rather than
+  // one after another. Sequentially this page took five round trips; now two.
+  const [request, userId] = await Promise.all([
+    getRequest(id),
+    getCurrentUserId(),
+  ]);
   if (!request) notFound();
 
-  const userId = await getCurrentUserId();
   const isOwner = userId === request.requester_id;
 
-  // Responses are RLS-gated: this returns rows only for the owner or the donor.
-  const responses = userId ? await getResponses(id) : [];
-  const myResponse = userId
-    ? responses.find((r) => r.donor_id === userId)
-    : undefined;
+  const [responses, donor, contact] = userId
+    ? await Promise.all([
+        // RLS-gated: returns rows only for the owner or the donor themself.
+        getResponses(id),
+        isOwner ? Promise.resolve(null) : getDonorProfile(userId),
+        // Also RLS-gated: returns null unless the viewer owns the request or
+        // has responded to it. Fetched here so it is not a third wave; the
+        // render below still checks before showing anything.
+        getRequestContact(id),
+      ])
+    : [[], null, null];
 
-  // The contact row is readable only by the owner or a donor who responded.
-  const contact = userId && (isOwner || myResponse) ? await getRequestContact(id) : null;
-
-  const donor = userId && !isOwner ? await getDonorProfile(userId) : null;
+  const myResponse = responses.find((r) => r.donor_id === userId);
+  const canSeeContact = Boolean(userId && (isOwner || myResponse));
 
   const responded = Math.min(request.responses_count, request.units_needed);
   const pct = Math.round((responded / request.units_needed) * 100);
@@ -167,7 +175,7 @@ export default async function RequestPage({
             request={request}
             donor={donor}
             myResponse={myResponse}
-            contact={contact}
+            contact={canSeeContact ? contact : null}
             t={t}
             lang={lang}
           />

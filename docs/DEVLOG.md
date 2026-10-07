@@ -303,3 +303,41 @@ The clearer message revealed two deeper problems.
 inside `setAvailability`, which has no `submitted` variable, breaking the build.
 Type-check caught it immediately. Targeted replacements need to be unique enough to
 match one call site, or verified afterwards.
+
+### Fix — "Posting…" appeared to hang after submitting
+
+**Reported:** the submit button sat on "Posting…" for a long time.
+
+**Diagnosis.** The request had in fact been created successfully — confirmed by
+querying the live project directly. So the action was fine; the slow part was the
+redirect to `/requests/[id]` that follows it. With `useActionState`, the pending
+state stays true until that navigation completes, so a slow destination page looks
+exactly like a hung button.
+
+Measured round-trip latency to the Supabase project: **~270ms**. The detail page was
+making four to five of those **sequentially** — `getRequest`, `getCurrentUserId`,
+`getResponses`, `getRequestContact`, `getDonorProfile` — so roughly 1.3s of pure
+waiting before anything rendered, on top of dev-mode route compilation.
+
+**Fixed**
+
+1. **Parallelised the detail page** into two waves of `Promise.all` instead of five
+   sequential awaits. The contact row is now fetched in the same wave and still
+   only rendered when the viewer is entitled to it — RLS returns null otherwise,
+   so this is safe either way, and the explicit `canSeeContact` check remains.
+2. **Added `loading.tsx` for every data route** (`/`, `/requests/[id]`, `/for-you`,
+   `/my-requests`, `/donor`). This is the larger perceived win: navigation now
+   paints a skeleton immediately instead of leaving the previous screen frozen.
+3. **Memoised `getCurrentUserId` with React `cache()`.** The header and the page
+   both need the user, and `getClaims()` may fetch the project's JWKS to verify the
+   token, so a single render was repeating that work. `cache()` is per-request, not
+   global, so it does not contradict the template's warning about module-level
+   clients.
+
+**Measured afterwards** (production build, signed out): `/requests/[id]` 0.12s,
+home 0.12s, `/learn` 0.04s. In dev, a cold compile of `/requests/[id]` adds about
+0.4s, and dev compilation is a meaningful part of what felt slow — worth remembering
+when demoing: run `npm run build && npm start`, not `npm run dev`.
+
+**Checked for collateral damage:** only one request row exists, so the apparent hang
+did not cause duplicate submissions.

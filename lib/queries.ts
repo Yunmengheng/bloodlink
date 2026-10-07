@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { compatibleRecipients, type BloodType } from "@/lib/blood";
 import type {
@@ -25,11 +26,20 @@ export function sortForFeed(requests: BloodRequest[]): BloodRequest[] {
   });
 }
 
-export async function getCurrentUserId(): Promise<string | null> {
+/**
+ * Memoised for the duration of one request render.
+ *
+ * The header and the page both need the signed-in user, and getClaims() may
+ * fetch the project's JWKS to verify the token. Without this, a single page
+ * render repeats that work several times. React's cache() is per-request, not
+ * global, so it does not contradict the template's warning about holding a
+ * Supabase client in a module-level variable.
+ */
+export const getCurrentUserId = cache(async (): Promise<string | null> => {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   return (data?.claims?.sub as string | undefined) ?? null;
-}
+});
 
 export async function getPublicStats(): Promise<PublicStats> {
   const supabase = await createClient();
