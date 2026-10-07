@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Field, FormSection } from "@/components/field";
 import { BloodTypePicker } from "@/components/blood-type-picker";
 import { Toast } from "@/components/toast";
+import { useFocusFirstError } from "@/components/use-focus-first-error";
 import { saveDonorProfile } from "@/app/actions/donor";
 import { translateKey, type ActionResult } from "@/lib/action-result";
 import { DISTRICTS } from "@/lib/districts";
@@ -29,6 +30,8 @@ export function DonorForm({
   const [bloodType, setBloodType] = useState<BloodType | null>(
     (donor?.blood_type as BloodType) ?? null,
   );
+
+  useFocusFirstError(state);
 
   const fieldError = (name: string) =>
     state && !state.ok && state.fieldErrors?.[name]
@@ -86,7 +89,13 @@ export function DonorForm({
       </FormSection>
 
       <FormSection title={t.newRequest.sectionContact} description={t.donor.contactHint}>
-        <Field id="phone" label={t.donor.phone} error={fieldError("phone")}>
+        <Field
+          id="phone"
+          label={t.donor.phone}
+          error={fieldError("phone")}
+          optional
+          optionalLabel={t.common.optional}
+        >
           <Input
             id="phone"
             name="phone"
@@ -103,6 +112,8 @@ export function DonorForm({
           label={t.donor.telegram}
           hint={t.donor.telegramHint}
           error={fieldError("telegram")}
+          optional
+          optionalLabel={t.common.optional}
         >
           <Input
             id="telegram"

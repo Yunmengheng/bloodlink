@@ -30,10 +30,21 @@ const phone = optionalText.refine(
 );
 
 const telegram = optionalText
-  // Accept a pasted @handle or a full t.me URL, then store the bare username.
-  .transform((v) =>
-    v === null ? null : v.replace(/^@/, "").replace(/^https?:\/\/t\.me\//i, ""),
-  )
+  // Accept what people actually paste — "@sokdara", "t.me/sokdara",
+  // "https://t.me/sokdara/" — and store the bare username.
+  .transform((v) => {
+    if (v === null) return null;
+    const cleaned = v
+      .trim()
+      .replace(/^https?:\/\//i, "")
+      .replace(/^t\.me\//i, "")
+      .replace(/^@/, "")
+      .replace(/\/+$/, "")
+      .trim();
+    // "@" on its own is the same as leaving the field empty.
+    return cleaned.length === 0 ? null : cleaned;
+  })
+  // Telegram's own rule: 5-32 characters, letters, digits and underscore.
   .refine((v) => v === null || /^[A-Za-z0-9_]{5,32}$/.test(v), {
     message: "errors.telegramInvalid",
   });

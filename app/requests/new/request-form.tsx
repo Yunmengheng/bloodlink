@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Field, FormSection } from "@/components/field";
 import { BloodTypePicker } from "@/components/blood-type-picker";
 import { Toast } from "@/components/toast";
+import { useFocusFirstError } from "@/components/use-focus-first-error";
 import { createRequest } from "@/app/actions/requests";
 import { translateKey, type ActionResult } from "@/lib/action-result";
 import { DISTRICTS } from "@/lib/districts";
@@ -27,6 +28,8 @@ export function RequestForm({ t, lang }: { t: Dictionary; lang: Lang }) {
   const [urgency, setUrgency] = useState<"critical" | "urgent" | "standard">(
     "urgent",
   );
+
+  useFocusFirstError(state);
 
   const fieldError = (name: string) =>
     state && !state.ok && state.fieldErrors?.[name]
@@ -60,7 +63,10 @@ export function RequestForm({ t, lang }: { t: Dictionary; lang: Lang }) {
   return (
     <form action={action} className="space-y-4">
       {state && !state.ok ? (
-        <Toast tone="error">{translateKey(state.error, t)}</Toast>
+        <Toast tone="error">
+          {translateKey(state.error, t)}
+          {state.fieldErrors ? ` ${t.errors.checkFields}` : ""}
+        </Toast>
       ) : null}
 
       <FormSection title={t.newRequest.sectionPatient}>
@@ -201,7 +207,13 @@ export function RequestForm({ t, lang }: { t: Dictionary; lang: Lang }) {
           <Input id="contact_name" name="contact_name" required maxLength={100} />
         </Field>
 
-        <Field id="phone" label={t.donor.phone} error={fieldError("phone")}>
+        <Field
+          id="phone"
+          label={t.donor.phone}
+          error={fieldError("phone")}
+          optional
+          optionalLabel={t.common.optional}
+        >
           <Input id="phone" name="phone" type="tel" inputMode="tel" placeholder="012 345 678" />
         </Field>
 
@@ -210,6 +222,8 @@ export function RequestForm({ t, lang }: { t: Dictionary; lang: Lang }) {
           label={t.donor.telegram}
           hint={t.donor.telegramHint}
           error={fieldError("telegram")}
+          optional
+          optionalLabel={t.common.optional}
         >
           <Input id="telegram" name="telegram" placeholder="sokdara" />
         </Field>

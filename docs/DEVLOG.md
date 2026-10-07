@@ -233,3 +233,40 @@ stats read as 0 and the feed shows its empty state rather than crashing.
   would be medically wrong, not just stale.
 - The seed script is the only place `SUPABASE_SECRET_KEY` is read, and the README
   states explicitly that it must not be added to Vercel.
+
+## Fix — "Use letters, numbers and underscores only" on the request form
+
+**Reported:** posting a request kept failing with "Use letters, numbers and
+underscores only." and no indication of which field was at fault.
+
+**Diagnosis.** Probed `newRequestSchema` directly rather than guessing. The schema
+was behaving correctly: phone-only, Telegram-only and both-filled all pass, and the
+message only fires when the Telegram field is non-empty and fails Telegram's own
+rule (5-32 characters, letters/digits/underscore). So the input was genuinely
+invalid — but the UI gave no way to work that out.
+
+**The real defect was the error reporting, not the validation:**
+
+1. The banner showed the raw message with no field name, and the inline error sat
+   below the fold in a long form.
+2. The hint under the Telegram field said only "Without the @" — it never stated
+   the length or character rule.
+3. Phone and Telegram were not marked optional on the request form, so leaving
+   Telegram blank did not look like a legitimate choice. It is: either channel is
+   enough.
+
+**Fixed**
+
+- Messages now name the field and state the rule, in both languages, and the
+  banner appends "Please check the highlighted field below."
+- `useFocusFirstError` scrolls the first failing field into view and focuses it.
+- Phone and Telegram are both labelled optional on both forms.
+- The Telegram transform now accepts what people actually paste — `@sokdara`,
+  `t.me/sokdara`, `https://t.me/sokdara/` — and treats a lone `@` as empty rather
+  than invalid.
+- 25 new tests in `lib/validation.test.ts` covering the normalisation cases, each
+  rejection reason, Cambodian phone formats, units bounds and the donor schema.
+
+**Also fixed:** `vitest.config.mts` had no `@/` alias, so any test importing a
+module by its `@/` path failed to resolve. Earlier tests happened to use relative
+imports and hid this. The alias now mirrors `tsconfig.json`.

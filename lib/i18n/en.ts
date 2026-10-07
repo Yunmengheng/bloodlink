@@ -130,7 +130,7 @@ export const en = {
     district: "Your district",
     phone: "Phone number",
     telegram: "Telegram username",
-    telegramHint: "Without the @",
+    telegramHint: "Leave empty if you don't use Telegram. 5–32 characters: letters, numbers and _ only, no @.",
     contactHint: "Give at least one: a phone number or a Telegram username.",
     lastDonation: "Last donation date",
     lastDonationHint: "Leave empty if you have never donated.",
@@ -258,8 +258,10 @@ export const en = {
     messageTooLong: "Message is too long (max 200 characters).",
     dateInFuture: "That date cannot be in the future.",
     dateInPast: "That date cannot be in the past.",
-    phoneInvalid: "Enter a valid phone number.",
-    telegramInvalid: "Use letters, numbers and underscores only.",
+    phoneInvalid: "Phone number: 6–20 digits, e.g. 012 345 678.",
+    telegramInvalid:
+      "Telegram username must be 5–32 characters, using only letters, numbers and _ . Leave it empty if you don't use Telegram.",
+    checkFields: "Please check the highlighted field below.",
   },
 } as const;
 
