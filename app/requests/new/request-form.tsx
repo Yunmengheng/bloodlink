@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { AlertTriangle, Clock, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { translateKey, type ActionResult } from "@/lib/action-result";
 import { DISTRICTS } from "@/lib/districts";
 import { PHNOM_PENH_HOSPITALS } from "@/lib/hospitals";
 import { cn } from "@/lib/utils";
+import { isValidTelegram } from "@/lib/telegram";
 import type { BloodType } from "@/lib/blood";
 import type { Dictionary, Lang } from "@/lib/i18n";
 
@@ -28,8 +29,21 @@ export function RequestForm({ t, lang }: { t: Dictionary; lang: Lang }) {
   const [urgency, setUrgency] = useState<"critical" | "urgent" | "standard">(
     "urgent",
   );
+  // Telegram is validated as you type, so the rule is visible before submitting.
+  const [telegram, setTelegram] = useState("");
 
   useFocusFirstError(state);
+
+  useEffect(() => {
+    if (state && !state.ok && state.values?.telegram !== undefined) {
+      setTelegram(state.values.telegram);
+    }
+  }, [state]);
+
+  // React resets a form after a Server Action, so a rejected submit would wipe
+  // everything the user typed. Re-seed each field from the echoed values.
+  const prev = (name: string) =>
+    (state && !state.ok ? state.values?.[name] : undefined) ?? "";
 
   const fieldError = (name: string) =>
     state && !state.ok && state.fieldErrors?.[name]
@@ -90,7 +104,7 @@ export function RequestForm({ t, lang }: { t: Dictionary; lang: Lang }) {
             inputMode="numeric"
             min={1}
             max={10}
-            defaultValue={1}
+            defaultValue={prev("units_needed") || 1}
             required
           />
         </Field>
@@ -139,6 +153,7 @@ export function RequestForm({ t, lang }: { t: Dictionary; lang: Lang }) {
             required
             maxLength={120}
             list="hospital-suggestions"
+            defaultValue={prev("hospital")}
             placeholder={PHNOM_PENH_HOSPITALS[0][lang]}
           />
           {/* Free text with suggestions, so hospitals outside the list still work. */}
@@ -150,7 +165,13 @@ export function RequestForm({ t, lang }: { t: Dictionary; lang: Lang }) {
         </Field>
 
         <Field id="district" label={t.request.district} error={fieldError("district")}>
-          <select id="district" name="district" required defaultValue="" className={SELECT_CLASS}>
+          <select
+            id="district"
+            name="district"
+            required
+            defaultValue={prev("district")}
+            className={SELECT_CLASS}
+          >
             <option value="" disabled>
               —
             </option>
@@ -173,6 +194,7 @@ export function RequestForm({ t, lang }: { t: Dictionary; lang: Lang }) {
             id="needed_by"
             name="needed_by"
             type="date"
+            defaultValue={prev("needed_by")}
             min={new Date().toISOString().slice(0, 10)}
           />
         </Field>
@@ -189,6 +211,7 @@ export function RequestForm({ t, lang }: { t: Dictionary; lang: Lang }) {
             name="note"
             maxLength={300}
             rows={3}
+            defaultValue={prev("note")}
             placeholder={t.newRequest.notePlaceholder}
             className="w-full rounded-input border border-border bg-surface px-3.5 py-3 text-base text-foreground shadow-soft transition-colors placeholder:text-faint focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25"
           />
@@ -204,7 +227,14 @@ export function RequestForm({ t, lang }: { t: Dictionary; lang: Lang }) {
           label={t.request.contactName}
           error={fieldError("contact_name")}
         >
-          <Input id="contact_name" name="contact_name" required maxLength={100} />
+          <Input
+            id="contact_name"
+            name="contact_name"
+            required
+            maxLength={100}
+            autoComplete="name"
+            defaultValue={prev("contact_name")}
+          />
         </Field>
 
         <Field
@@ -214,18 +244,43 @@ export function RequestForm({ t, lang }: { t: Dictionary; lang: Lang }) {
           optional
           optionalLabel={t.common.optional}
         >
-          <Input id="phone" name="phone" type="tel" inputMode="tel" placeholder="012 345 678" />
+          <Input
+            id="phone"
+            name="phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            defaultValue={prev("phone")}
+            placeholder="012 345 678"
+          />
         </Field>
 
         <Field
           id="telegram"
           label={t.donor.telegram}
           hint={t.donor.telegramHint}
-          error={fieldError("telegram")}
+          error={
+            // Show the rule as soon as it is broken, not only after a submit.
+            telegram && !isValidTelegram(telegram)
+              ? t.errors.telegramInvalid
+              : fieldError("telegram")
+          }
           optional
           optionalLabel={t.common.optional}
         >
-          <Input id="telegram" name="telegram" placeholder="sokdara" />
+          <Input
+            id="telegram"
+            name="telegram"
+            value={telegram}
+            onChange={(e) => setTelegram(e.target.value)}
+            // Chrome was autofilling an email address into this box, which can
+            // never be a valid Telegram username. Opt out of autofill entirely.
+            autoComplete="off"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            placeholder="sokdara"
+          />
         </Field>
       </FormSection>
 

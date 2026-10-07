@@ -270,3 +270,36 @@ invalid — but the UI gave no way to work that out.
 **Also fixed:** `vitest.config.mts` had no `@/` alias, so any test importing a
 module by its `@/` path failed to resolve. Earlier tests happened to use relative
 imports and hid this. The alias now mirrors `tsconfig.json`.
+
+### Follow-up — the real cause, and a worse bug behind it
+
+The clearer message revealed two deeper problems.
+
+1. **Chrome was autofilling the Telegram field.** `<Input id="telegram">` had no
+   `autoComplete` attribute, so the browser guessed and filled it with an email
+   address. An email can never be a valid Telegram username (it has `@` and `.`),
+   so the form rejected a field the user had never touched. Fixed with
+   `autoComplete="off"` plus `autoCapitalize`/`autoCorrect`/`spellCheck` off, on
+   both the request and donor forms, and `autoComplete` set correctly on the name
+   and phone fields so they autofill with the *right* thing.
+
+2. **A rejected form wiped everything the user had typed.** React resets a form
+   after a Server Action completes, and every text field used `defaultValue`, so a
+   validation failure cleared the hospital, contact name, phone and note. The user
+   then could not see what had been rejected, and had to retype the whole form to
+   try again — which is why the same error kept recurring. `ActionResult` now
+   carries the submitted values back on failure, and the forms re-seed every field
+   from them.
+
+**Also**
+
+- Telegram parsing moved to `lib/telegram.ts` and is shared by the form (live
+  feedback while typing) and the Zod schema (the real check), so the two cannot
+  drift apart. 23 tests, including the autofilled-email case specifically.
+- The Telegram field now shows its error as you type rather than only after a
+  round trip.
+
+**Process note.** A broad string replacement in `app/actions/donor.ts` also matched
+inside `setAvailability`, which has no `submitted` variable, breaking the build.
+Type-check caught it immediately. Targeted replacements need to be unique enough to
+match one call site, or verified afterwards.

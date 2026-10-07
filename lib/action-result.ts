@@ -7,13 +7,23 @@ import type { Dictionary } from "@/lib/i18n";
  */
 export type ActionResult =
   | { ok: true; message?: string }
-  | { ok: false; error: string; fieldErrors?: Record<string, string> };
+  | {
+      ok: false;
+      error: string;
+      fieldErrors?: Record<string, string>;
+      /**
+       * What the user submitted. React resets a form after a Server Action, so
+       * without echoing these back a rejected form loses everything they typed.
+       */
+      values?: Record<string, string>;
+    };
 
 export function failure(
   error: string,
   fieldErrors?: Record<string, string>,
+  values?: Record<string, string>,
 ): ActionResult {
-  return { ok: false, error, fieldErrors };
+  return { ok: false, error, fieldErrors, values };
 }
 
 export function success(message?: string): ActionResult {

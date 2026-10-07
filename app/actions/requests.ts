@@ -20,10 +20,18 @@ export async function createRequest(
   _prev: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  // Echoed back on failure so the form can be re-rendered as the user left it.
+  const submitted = Object.fromEntries(
+    [
+      "patient_blood_type", "units_needed", "hospital", "district", "urgency",
+      "needed_by", "note", "contact_name", "phone", "telegram",
+    ].map((k) => [k, String(formData.get(k) ?? "")]),
+  );
+
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getClaims();
   const userId = auth?.claims?.sub;
-  if (!userId) return failure("errors.notSignedIn");
+  if (!userId) return failure("errors.notSignedIn", undefined, submitted);
 
   const parsed = newRequestSchema.safeParse({
     patient_blood_type: formData.get("patient_blood_type") ?? "",
@@ -40,7 +48,11 @@ export async function createRequest(
 
   if (!parsed.success) {
     const fields = fieldErrors(parsed.error.issues);
-    return failure(Object.values(fields)[0] ?? "errors.notFound", fields);
+    return failure(
+      Object.values(fields)[0] ?? "errors.notFound",
+      fields,
+      submitted,
+    );
   }
 
   const r = parsed.data;
@@ -60,7 +72,8 @@ export async function createRequest(
     .select("id")
     .single();
 
-  if (error || !inserted) return failure("common.somethingWentWrong");
+  if (error || !inserted)
+    return failure("common.somethingWentWrong", undefined, submitted);
 
   // Contact details go in the private table, never on the public request row.
   const { error: contactError } = await supabase
@@ -76,7 +89,7 @@ export async function createRequest(
     // Without a contact row nobody can reach the family, so the request would
     // be useless. Roll it back rather than leaving an unanswerable request up.
     await supabase.from("blood_requests").delete().eq("id", inserted.id);
-    return failure("common.somethingWentWrong");
+    return failure("common.somethingWentWrong", undefined, submitted);
   }
 
   revalidatePath("/");

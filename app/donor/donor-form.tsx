@@ -119,6 +119,12 @@ export function DonorForm({
             id="telegram"
             name="telegram"
             defaultValue={donor?.telegram_username ?? ""}
+            // Browsers autofill an email address into a bare text field named
+            // like this, which can never be a valid Telegram username.
+            autoComplete="off"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             placeholder="sokdara"
           />
         </Field>

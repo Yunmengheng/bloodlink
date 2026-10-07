@@ -20,10 +20,17 @@ export async function saveDonorProfile(
   _prev: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  const submitted = Object.fromEntries(
+    [
+      "full_name", "blood_type", "district", "phone", "telegram",
+      "last_donation_date",
+    ].map((k) => [k, String(formData.get(k) ?? "")]),
+  );
+
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getClaims();
   const userId = auth?.claims?.sub;
-  if (!userId) return failure("errors.notSignedIn");
+  if (!userId) return failure("errors.notSignedIn", undefined, submitted);
 
   const parsed = donorProfileSchema.safeParse({
     full_name: formData.get("full_name") ?? "",
@@ -37,7 +44,11 @@ export async function saveDonorProfile(
 
   if (!parsed.success) {
     const fields = fieldErrors(parsed.error.issues);
-    return failure(Object.values(fields)[0] ?? "errors.notFound", fields);
+    return failure(
+      Object.values(fields)[0] ?? "errors.notFound",
+      fields,
+      submitted,
+    );
   }
 
   const d = parsed.data;
@@ -56,7 +67,7 @@ export async function saveDonorProfile(
     { onConflict: "id" },
   );
 
-  if (error) return failure("common.somethingWentWrong");
+  if (error) return failure("common.somethingWentWrong", undefined, submitted);
 
   revalidatePath("/donor");
   revalidatePath("/for-you");
