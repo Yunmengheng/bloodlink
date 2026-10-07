@@ -1,4 +1,4 @@
-import { BloodDrop } from "@/components/brand/blood-drop";
+import { BrandMark } from "@/components/brand/brand-mark";
 
 /** Shared frame for every auth page: centred card with the drop mark on top. */
 export function AuthShell({
@@ -15,7 +15,7 @@ export function AuthShell({
   return (
     <div className="mx-auto w-full max-w-md px-4 py-12 sm:py-16">
       <div className="rounded-card border border-border bg-surface p-6 shadow-soft sm:p-8">
-        <BloodDrop size="md" />
+        <BrandMark className="h-10 w-8" />
         <h1 className="mt-4 text-lg font-bold tracking-tight text-foreground">
           {title}
         </h1>

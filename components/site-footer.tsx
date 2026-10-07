@@ -10,7 +10,7 @@ export function SiteFooter({ t }: { t: Dictionary }) {
         {/* flex column, not space-y: the logo and link are both inline-level,
             so vertical margin alone would still leave them on one line. */}
         <div className="flex flex-col items-start gap-3">
-          <Logo />
+          <Logo size="sm" />
           <Link
             href="/learn"
             className="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"

@@ -403,3 +403,38 @@ shift while the session resolves.
 directory, created by an accidental `npm i` outside the repo. It was making Next
 warn on every build: "Next.js ignored package-lock.json ... because it is outside
 the current Git repository."
+
+### Redesign — logo and navigation
+
+**Logo.** The old mark was a flat red teardrop beside "BloodLink KH" with KH as
+loose red text. Replaced with `components/brand/brand-mark.tsx`: a drop with a
+**heart punched out of it** using an SVG mask, filled with a vertical gradient from
+`--primary` to `--primary-hover`. A mask rather than a white heart drawn on top, so
+the mark works on any background including the tinted header. "KH" is now a small
+rounded badge rather than stray coloured text, which makes the country tag read as
+part of the brand.
+
+`BrandMark` is deliberately separate from `BloodDrop`: the latter carries a blood
+type label and appears in cards, so it must stay simple and legible at 24px, while
+the brand mark can afford gradient and detail.
+
+Tuned by screenshotting the header, cropping and upscaling it with `sips`, then
+looking at the result: the first attempt had the heart too small and sitting low in
+the drop, and the badge rendered as a bubbly lozenge. Second pass centred the heart
+on the drop's round body (centre 16, 25.5) at scale 0.62 and squared the badge.
+
+**Navigation.** The old nav had no active state, so the only visible treatment was a
+grey hover pill that read as a stray artifact rather than a design. `MainNav` now
+marks the current page with a tinted pill in the brand colour — consistent with the
+language toggle and the blood-type tiles — with a much lighter hover wash, plus
+`aria-current="page"`. Home was also added, which was missing entirely. The header
+is now three clear zones (brand, navigation, account) with a hairline separator
+before the account controls.
+
+**Problem hit.** The larger wordmark pushed the page 3px wide at 375px. Fixed by
+making the mark and wordmark responsive rather than shrinking the design. A 360px
+`xs` breakpoint now drops the KH badge below that width; 320px still overflows by
+9px, in the feed card and tab bar rather than the header — noted, outside the
+375/1280 targets the brief specifies.
+
+`AuthShell` now uses the brand mark too, so the auth pages match.

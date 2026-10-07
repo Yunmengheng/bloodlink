@@ -39,7 +39,7 @@ export function LanguageToggle({ lang, label }: { lang: Lang; label: string }) {
             className={cn(
               // Khmer subscript consonants (the ្ម in ខ្មែរ) sit below the
               // baseline and get clipped at a tight line-height.
-              "flex min-h-[36px] items-center justify-center rounded-pill px-3 text-xs font-semibold leading-[1.9] transition-colors duration-150 ease-out",
+              "flex min-h-[36px] items-center justify-center rounded-pill px-2.5 text-xs font-semibold leading-[1.9] transition-colors duration-150 ease-out sm:px-3",
               active
                 ? "bg-surface text-foreground shadow-soft"
                 : "text-subtle hover:text-foreground",

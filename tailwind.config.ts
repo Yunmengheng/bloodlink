@@ -14,6 +14,11 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        // Below this, very narrow phones (320px) need the header trimmed.
+        xs: "360px",
+      },
+
       fontFamily: {
         sans: ["var(--font-latin)", "var(--font-khmer)", "system-ui", "sans-serif"],
         khmer: ["var(--font-khmer)", "sans-serif"],
